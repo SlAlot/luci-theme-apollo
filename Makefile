@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-theme-apollo
 PKG_VERSION:=1.0.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKGARCH:=all
 PKG_LICENSE:=LicenseRef-WLMB-NonCommercial AND Apache-2.0
 PKG_MAINTAINER:=SlAlot
@@ -11,6 +11,7 @@ include $(INCLUDE_DIR)/package.mk
 
 
 define Package/luci-theme-apollo
+  PKGARCH:=all
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=4. Themes

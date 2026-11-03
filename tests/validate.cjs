@@ -18,3 +18,5 @@ system.battery.observedAtMs=now;system.stale=true;assert.equal(api.battery(syste
 assert.equal(api.bytes(null),'—');assert.equal(api.bytes(-1),'—');
 for(const key of ['home','wifi','bands','battery','disk','docker','settings','terminal'])assert(api.icon(key).childNodes.length>0);
 console.log("luci-theme-apollo"+': JavaScript/JSON syntax, contract validity, real zero, stale/invalid battery and semantic SVG icons passed');
+
+const recipe=fs.readFileSync(path.join(root,"Makefile"),"utf8");assert(recipe.includes("  PKGARCH:=all"),"Package metadata must be architecture independent");
