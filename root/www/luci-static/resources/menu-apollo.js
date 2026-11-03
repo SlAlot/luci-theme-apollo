@@ -107,7 +107,7 @@ return baseclass.extend({
             battery.classList.toggle('is-low', b.available && b.percent <= 15);
             battery.classList.toggle('is-unknown', !b.available);
             battery.setAttribute('aria-label', b.label + (powerPage ? '，打开光影猫管理' : ''));
-            battery.replaceChildren(panel.icon('battery'), E('span', {}, b.available ? b.percent + '%' : '—'));
+            battery.replaceChildren(panel.icon('battery', b.percent), E('span', {}, b.available ? b.percent + '%' : '—'));
             battery.title = b.label;
         }
         if (battery) poll.add(function() { return panel.status().then(paintBattery).catch(function() { paintBattery(null); }); }, 5);

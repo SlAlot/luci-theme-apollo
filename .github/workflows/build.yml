@@ -29,10 +29,15 @@ jobs:
         sdk: [x86_64-24.10.2, x86_64]
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare SDK feed layout
+        run: |
+          mkdir -p "$RUNNER_TEMP/feed/luci-theme-apollo"
+          cp -a Makefile LICENSE root "$RUNNER_TEMP/feed/luci-theme-apollo/"
       - name: Build standard architecture-independent OpenWrt package
         uses: openwrt/gh-action-sdk@f5813d30eeef3534b58ac7e79c5d8842b6035434
         env:
           ARCH: ${{ matrix.sdk }}
+          FEED_DIR: ${{ runner.temp }}/feed
           PACKAGES: luci-theme-apollo
           FEEDNAME: panel
           V: s

@@ -5,7 +5,7 @@
 var readStatus = rpc.declare({ object:'network-panel', method:'status', params:['modem'] });
 var cache = window.__wlmbReadCache || (window.__wlmbReadCache = { pending:null, at:0 }), assetsReady;
 var extra = {
-    battery:[['rect',{x:2,y:6,width:18,height:12,rx:3}],['path',{d:'M22 10v4M6 10v4m4-4v4m4-4v4'}]],
+    battery:[['rect',{x:2,y:6,width:18,height:12,rx:3}],['path',{d:'M22 10v4'}]],
     cpu:[['rect',{x:5,y:5,width:14,height:14,rx:3}],['rect',{x:9,y:9,width:6,height:6,rx:1}],['path',{d:'M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3'}]],
     memory:[['rect',{x:3,y:6,width:18,height:12,rx:2}],['path',{d:'M7 10v4m5-4v4m5-4v4M7 18v3m5-3v3m5-3v3'}]],
     disk:[['rect',{x:3,y:3,width:18,height:18,rx:3}],['circle',{cx:12,cy:10,r:4}],['path',{d:'m12 10 5 7M6 18h2'}]],
@@ -19,7 +19,7 @@ var extra = {
     clock:[['circle',{cx:12,cy:12,r:9}],['path',{d:'M12 7v5l3 2'}]],
     apps:[['rect',{x:3,y:3,width:7,height:7,rx:2}],['rect',{x:14,y:3,width:7,height:7,rx:2}],['rect',{x:3,y:14,width:7,height:7,rx:2}],['rect',{x:14,y:14,width:7,height:7,rx:2}]]
 };
-function icon(name) {
+function icon(name, percent) {
     var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg'), upstream=window.WLMBIcons;
     svg.setAttribute('class','np-icon'); svg.setAttribute('aria-hidden','true'); svg.setAttribute('focusable','false');
     if (upstream && upstream.paths[name]) {
@@ -29,6 +29,11 @@ function icon(name) {
         svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none'); svg.setAttribute('stroke','currentColor');
         svg.setAttribute('stroke-width','1.7'); svg.setAttribute('stroke-linecap','round'); svg.setAttribute('stroke-linejoin','round');
         (extra[name] || extra.apps).forEach(function(row) { var node=document.createElementNS(ns,row[0]); Object.keys(row[1]).forEach(function(k){node.setAttribute(k,row[1][k]);}); svg.appendChild(node); });
+    }
+    if (name==='battery' && Number.isFinite(percent) && percent>=0 && percent<=100) {
+        var level=document.createElementNS(ns,'rect');
+        Object.entries({x:5,y:9,width:12*percent/100,height:6,rx:1,fill:'currentColor',stroke:'none'}).forEach(function(item){level.setAttribute(item[0],item[1]);});
+        svg.appendChild(level);
     }
     return svg;
 }

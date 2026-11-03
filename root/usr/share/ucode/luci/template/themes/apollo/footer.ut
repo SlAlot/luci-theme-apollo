@@ -1,6 +1,6 @@
         {% if (!blank_page): %}
         </main>
-        <footer class="npt-footer"><span>SWRT · SlAlot</span><a href="https://github.com/openwrt/luci" target="_blank" rel="noreferrer">LuCI</a></footer>
+        <footer class="npt-footer"><a href="{{ resource }}/apollo/notices.html" target="_blank" rel="noreferrer">SWRT · SlAlot</a></footer>
         <script>L.require('menu-apollo');</script>
         {% endif %}
     </body>
