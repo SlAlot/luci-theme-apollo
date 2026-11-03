@@ -4,7 +4,7 @@ PKG_NAME:=luci-theme-apollo
 PKG_VERSION:=1.0.0
 PKG_RELEASE:=2
 PKGARCH:=all
-PKG_LICENSE:=LicenseRef-WLMB-NonCommercial AND Apache-2.0
+PKG_LICENSE:=LicenseRef-WLMB-NonCommercial AND Apache-2.0 AND MIT
 PKG_MAINTAINER:=SlAlot
 
 include $(INCLUDE_DIR)/package.mk
@@ -41,6 +41,7 @@ define Package/luci-theme-apollo/install
 	$(CP) ./root/. $(1)/
 	$(INSTALL_DIR) $(1)/usr/share/luci-theme-apollo
 	$(INSTALL_DATA) ./LICENSE $(1)/usr/share/luci-theme-apollo/LICENSE
+	$(CP) ./LICENSES $(1)/usr/share/luci-theme-apollo/
 	chmod 755 $(1)/etc/uci-defaults/95-apollo-theme
 endef
 

@@ -32,7 +32,7 @@ jobs:
       - name: Prepare SDK feed layout
         run: |
           mkdir -p "$RUNNER_TEMP/feed/luci-theme-apollo"
-          cp -a Makefile LICENSE root "$RUNNER_TEMP/feed/luci-theme-apollo/"
+          cp -a Makefile LICENSE LICENSES root "$RUNNER_TEMP/feed/luci-theme-apollo/"
       - name: Build standard architecture-independent OpenWrt package
         uses: openwrt/gh-action-sdk@f5813d30eeef3534b58ac7e79c5d8842b6035434
         env:
