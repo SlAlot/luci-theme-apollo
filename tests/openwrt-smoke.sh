@@ -45,10 +45,18 @@ docker exec "$box" sh -ec '
     uci set luci.main.mediaurlbase=/luci-static/apollo
     uci commit luci
 '
-docker exec -d "$box" /usr/sbin/uhttpd -f -p 0.0.0.0:80 -h /www -x /cgi-bin
+docker exec "$box" sh -ec '
+    uci -q delete uhttpd.main.listen_http || true
+    uci add_list uhttpd.main.listen_http=0.0.0.0:80
+    uci set uhttpd.main.redirect_https=0
+    uci commit uhttpd
+    /etc/init.d/uhttpd restart
+'
 
 url=http://127.0.0.1:18080/cgi-bin/luci
-curl -fsS --retry 8 --retry-connrefused --retry-delay 1 "$url/" -o "$response"
+status=$(curl -sS --retry 8 --retry-connrefused --retry-delay 1 "$url/" -o "$response" -w '%{http_code}')
+# LuCI 用 403 返回未登录状态及登录表单。
+test "$status" = 403 || test "$status" = 200
 grep -q 'luci_password' "$response"
 curl -fsS -c "$jar" -d 'luci_username=root&luci_password=luci-smoke' "$url/" -o "$response"
 curl -fsSL -b "$jar" "$url/admin/system/system" -o "$response"
