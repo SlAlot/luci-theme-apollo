@@ -2,7 +2,6 @@ name: Check and build packages
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -26,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk: [x86_64-24.10.2, x86_64]
+        sdk: [x86_64-23.05.5, x86_64-24.10.5, x86_64-25.12.0]
     steps:
       - uses: actions/checkout@v4
       - name: Prepare SDK feed layout
@@ -45,6 +44,8 @@ jobs:
         run: |
           find bin -type f \( -name 'luci-theme-apollo*.ipk' -o -name 'luci-theme-apollo*.apk' \) > package-files.txt
           test -s package-files.txt
+      - name: Install and start stock LuCI
+        run: bash tests/openwrt-smoke.sh ${{ matrix.sdk }} "$(head -n 1 package-files.txt)"
       - uses: actions/upload-artifact@v4
         with:
           name: luci-theme-apollo-${{ matrix.sdk }}
