@@ -44,9 +44,22 @@ jobs:
           sudo chown 1000:1000 "$output"
           curl -fsSL --retry 3 -o "$entrypoint" \
             https://raw.githubusercontent.com/openwrt/gh-action-sdk/f5813d30eeef3534b58ac7e79c5d8842b6035434/entrypoint.sh
+          upstream=https://downloads.openwrt.org
+          if [ "$SDK_TAG" != x86_64-23.05.5 ]; then
+            mirror="$RUNNER_TEMP/sdk-mirror"
+            python3 tests/fetch-sdk.py "${SDK_TAG#x86_64-}" "$mirror"
+            python3 -m http.server 18765 --bind 127.0.0.1 --directory "$mirror" >/dev/null 2>&1 &
+            server=$!
+            trap 'kill "$server"' EXIT
+            upstream=http://127.0.0.1:18765
+            for attempt in 1 2 3 4 5; do
+              curl -fsS "$upstream/" -o /dev/null && break
+              sleep 1
+            done
+          fi
           status=0
-          docker run --rm --entrypoint /bin/bash \
-            -e FILE_HOST=https://downloads.openwrt.org -e UPSTREAM_URL=https://downloads.openwrt.org \
+          docker run --rm --network host --entrypoint /bin/bash \
+            -e FILE_HOST="$upstream" -e UPSTREAM_URL="$upstream" \
             -e PACKAGES -e FEEDNAME=panel -e V=s \
             -v "$RUNNER_TEMP/feed:/feed:ro" -v "$output:/artifacts" \
             -v "$entrypoint:/sdk-entrypoint.sh:ro" \
