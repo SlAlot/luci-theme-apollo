@@ -44,8 +44,6 @@ jobs:
         run: |
           find bin -type f \( -name 'luci-theme-apollo*.ipk' -o -name 'luci-theme-apollo*.apk' \) > package-files.txt
           test -s package-files.txt
-      - name: Install and start stock LuCI
-        run: bash tests/openwrt-smoke.sh ${{ matrix.sdk }} "$(head -n 1 package-files.txt)"
       - uses: actions/upload-artifact@v4
         with:
           name: luci-theme-apollo-${{ matrix.sdk }}
@@ -53,6 +51,8 @@ jobs:
             bin/packages/**/luci-theme-apollo*.ipk
             bin/packages/**/luci-theme-apollo*.apk
           if-no-files-found: error
+      - name: Install and start stock LuCI
+        run: bash tests/openwrt-smoke.sh ${{ matrix.sdk }} "$(head -n 1 package-files.txt)"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

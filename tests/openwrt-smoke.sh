@@ -13,32 +13,37 @@ cleanup() {
 trap cleanup EXIT
 
 docker run -d --name "$box" -p 127.0.0.1:18080:80 \
-    --entrypoint /bin/sh "openwrt/rootfs:$sdk" -c 'sleep 600' >/dev/null
+    --entrypoint /bin/sh "openwrt/rootfs:$sdk" -c 'sleep 1200' >/dev/null
 docker cp "$pkg" "$box:/tmp/plugin.${pkg##*.}"
 
-docker exec "$box" sh -ec '
+docker exec -e SMOKE_HASH="$(openssl passwd -6 luci-smoke)" "$box" sh -ec '
+    mkdir -p /var/lock /var/run/ubus
     if command -v apk >/dev/null; then
         apk update
         apk add luci-base luci-mod-admin-full luci-theme-bootstrap uhttpd
-        apk add --allow-untrusted /tmp/plugin.apk
     else
         opkg update
         opkg install luci-base luci-mod-admin-full luci-theme-bootstrap uhttpd
-        opkg install /tmp/plugin.ipk
     fi
-    mkdir -p /var/run/ubus
-    printf "%s\\n" "root:luci-smoke" | chpasswd
-    # 确认主题在原版 LuCI 上注册并作为实际渲染模板。
-    if [ -f /etc/uci-defaults/95-apollo-theme ]; then sh /etc/uci-defaults/95-apollo-theme; fi
-    test "$(uci get luci.themes.Apollo)" = /luci-static/apollo
-    uci set luci.main.mediaurlbase=/luci-static/apollo
-    uci commit luci
+    sed -i "s#^root:[^:]*:#root:${SMOKE_HASH}:#" /etc/shadow
 '
 docker exec -d "$box" /sbin/ubusd -s /var/run/ubus/ubus.sock
 docker exec "$box" sh -ec 'for n in 1 2 3 4 5; do ubus list && exit 0; sleep 1; done; exit 1'
 docker exec -d "$box" /sbin/procd -s /var/run/ubus/ubus.sock
 docker exec -d "$box" /sbin/rpcd
 docker exec "$box" ubus -t 15 wait_for system session
+docker exec "$box" sh -ec '
+    if command -v apk >/dev/null; then
+        apk add --allow-untrusted /tmp/plugin.apk
+    else
+        opkg install /tmp/plugin.ipk
+    fi
+    # 确认主题在原版 LuCI 上注册并作为实际渲染模板。
+    if [ -f /etc/uci-defaults/95-apollo-theme ]; then sh /etc/uci-defaults/95-apollo-theme; fi
+    test "$(uci get luci.themes.Apollo)" = /luci-static/apollo
+    uci set luci.main.mediaurlbase=/luci-static/apollo
+    uci commit luci
+'
 docker exec -d "$box" /usr/sbin/uhttpd -f -p 0.0.0.0:80 -h /www -x /cgi-bin
 
 url=http://127.0.0.1:18080/cgi-bin/luci
