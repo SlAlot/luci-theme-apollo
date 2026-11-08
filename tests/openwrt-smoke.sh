@@ -30,8 +30,9 @@ docker exec -e SMOKE_HASH="$(openssl passwd -6 luci-smoke)" "$box" sh -ec '
 docker exec -d "$box" /sbin/ubusd -s /var/run/ubus/ubus.sock
 docker exec "$box" sh -ec 'for n in 1 2 3 4 5; do ubus list && exit 0; sleep 1; done; exit 1'
 docker exec -d "$box" /sbin/procd -s /var/run/ubus/ubus.sock
-docker exec -d "$box" /sbin/rpcd
-docker exec "$box" ubus -t 15 wait_for system session
+docker exec "$box" ubus -t 15 wait_for system service
+docker exec "$box" /etc/init.d/rpcd start
+docker exec "$box" ubus -t 15 wait_for session
 docker exec "$box" sh -ec '
     if command -v apk >/dev/null; then
         apk add --allow-untrusted /tmp/plugin.apk
