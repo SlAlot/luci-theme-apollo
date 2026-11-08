@@ -33,13 +33,27 @@ jobs:
           mkdir -p "$RUNNER_TEMP/feed/luci-theme-apollo"
           cp -a Makefile LICENSE LICENSES root "$RUNNER_TEMP/feed/luci-theme-apollo/"
       - name: Build standard architecture-independent OpenWrt package
-        uses: openwrt/gh-action-sdk@f5813d30eeef3534b58ac7e79c5d8842b6035434
+        timeout-minutes: 20
         env:
-          ARCH: ${{ matrix.sdk }}
-          FEED_DIR: ${{ runner.temp }}/feed
+          SDK_TAG: ${{ matrix.sdk }}
           PACKAGES: luci-theme-apollo
-          FEEDNAME: panel
-          V: s
+        run: |
+          entrypoint="$RUNNER_TEMP/sdk-entrypoint.sh"
+          output="$RUNNER_TEMP/sdk-output"
+          mkdir -p "$output"
+          sudo chown 1000:1000 "$output"
+          curl -fsSL --retry 3 -o "$entrypoint" \
+            https://raw.githubusercontent.com/openwrt/gh-action-sdk/f5813d30eeef3534b58ac7e79c5d8842b6035434/entrypoint.sh
+          status=0
+          docker run --rm --entrypoint /bin/bash \
+            -e FILE_HOST=https://downloads.openwrt.org -e UPSTREAM_URL=https://downloads.openwrt.org \
+            -e PACKAGES -e FEEDNAME=panel -e V=s \
+            -v "$RUNNER_TEMP/feed:/feed:ro" -v "$output:/artifacts" \
+            -v "$entrypoint:/sdk-entrypoint.sh:ro" \
+            "ghcr.io/openwrt/sdk:$SDK_TAG" /sdk-entrypoint.sh || status=$?
+          sudo chown -R "$(id -u):$(id -g)" "$output"
+          cp -a "$output/." .
+          exit "$status"
       - name: Verify package was produced
         run: |
           find bin -type f \( -name 'luci-theme-apollo*.ipk' -o -name 'luci-theme-apollo*.apk' \) > package-files.txt
